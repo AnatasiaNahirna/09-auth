@@ -1,82 +1,100 @@
 "use client";
 
-import css from './EditProfilePage.module.css';
-import Image from 'next/image';
-import { useAuthStore } from '@/lib/store/authStore';
-import { useRouter } from 'next/navigation';
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { patchUser, getUser } from "@/lib/api/clientApi";
+import css from "./EditProfilePage.module.css";
+import { useAuthStore } from "@/lib/store/authStore";
 
-import { AxiosError } from 'axios';
-import { patchUser } from '@/lib/api/clientApi';
+export default function EditProfile() {
+  const router = useRouter();
 
-export default  function EditProfilePage(
-) {
-  const user = useAuthStore((state) => (state.user))
-  const setUser = useAuthStore((state) => (state.setUser))
-  const router = useRouter()
-  
-  const onSubmit = async (formData: FormData) => {
-    const username = formData.get("username") as string;
-    if (username.trim() === "") {
-      return alert("Username can't be empty!")
-    }
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [userImage, setUserImage] = useState("");
+
+  const setUser = useAuthStore((state) => state.setUser);
+  useEffect(() => {
+    async function fetchUser() {
       try {
-          const res = await patchUser(username)
-          if (res) {
-              setUser(res)
-              router.push('/profile');
-          } else {
-              alert('Validation error');
-          }
-      } catch (error) {
-      if (error instanceof AxiosError) {
-        const message =
-          error.response?.data?.response?.message ??
-          error.response?.data?.error ??             
-          error.message ??                           
-          'Something went wrong, try again!';
-          alert(message);
-      }else {
-        alert('Something went wrong, try again!');
+        const userData = await getUser();
+        setUsername(userData.username);
+        setEmail(userData.email);
+        setUserImage(userData.avatar ?? "");
+      } catch (e) {
+        setError("Failed to load user data");
       }
     }
-  }
-  
+    fetchUser();
+  }, []);
+
+  const handleSaveSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await patchUser({ username });
+       console.log('User data after edit:', result)
+      setUser(result);
+      router.push("/profile");
+    } catch (error) {
+      setError(String(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    router.push("/profile");
+  };
+
   return (
-<main className={css.mainContent}>
-  <div className={css.profileCard}>
-    <h1 className={css.formTitle}>Edit Profile</h1>
+    <main className={css.mainContent}>
+      <div className={css.profileCard}>
+        <h1 className={css.formTitle}>Edit Profile</h1>
 
-    <Image src={user?.avatar ?? "https://ac.goit.global/fullstack/react/default-avatar.jpg"}
-      alt="User Avatar"
-      width={120}
-      height={120}
-      className={css.avatar}
-    />
-
-    <form className={css.profileInfo} action={onSubmit}>
-      <div className={css.usernameWrapper}>
-        <label htmlFor="username">Username:</label>
-        <input id="username"
-          name="username"
-          type="text"
-          className={css.input}
-          defaultValue={user?.username}    
+        <Image
+          src={userImage || "/profile-photo.png"}
+          alt="User Avatar"
+          width={120}
+          height={120}
+          className={css.avatar}
         />
+
+        <form onSubmit={handleSaveSubmit} className={css.profileInfo}>
+          <div className={css.usernameWrapper}>
+            <label htmlFor="username">Username:</label>
+            <input
+              id="username"
+              type="text"
+              className={css.input}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+
+          <p>Email: {email}</p>
+
+          {error && <p style={{ color: "red" }}>{error}</p>}
+
+          <div className={css.actions}>
+            <button type="submit" className={css.saveButton} disabled={loading}>
+              {loading ? "Saving..." : "Save"}
+            </button>
+            <button
+              onClick={handleCancel}
+              type="button"
+              className={css.cancelButton}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
-
-      <p>Email: {user?.email}</p>
-
-      <div className={css.actions}>
-        <button type="submit" className={css.saveButton}>
-          Save
-        </button>
-        <button type="button" className={css.cancelButton} onClick={()=>{router.push('/profile')}}>
-          Cancel
-        </button>
-      </div>
-    </form>
-  </div>
-</main>
-
+    </main>
   );
 }

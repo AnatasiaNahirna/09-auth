@@ -5,7 +5,7 @@ import * as Yup from "yup";
 import { useRouter } from 'next/navigation';
 import type { NoteTag } from "../../types/note";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote } from "../../lib/api/api";
+import { createNote } from "../../lib/api/clientApi";
 import { useNoteDraft } from "@/lib/store/noteStore";
 
 const validationSchema = Yup.object({

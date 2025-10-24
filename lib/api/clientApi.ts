@@ -1,5 +1,7 @@
+import { User } from "@/types/user";
 import type { NoteTag, Note } from "../../types/note"
 import { nextServer } from "./api"
+export type { User } from "../../types/user"
 
 export interface FetchNotesResponse {
     notes: Note[],
@@ -16,15 +18,6 @@ export type RegisterRequest = {
   email: string;
   password: string;
   userName: string;
-};
-
-export type User = {
-  id: string;
-  email: string;
-  userName?: string;
-  photoUrl?: string;
-  createdAt: Date;
-  updatedAt: Date;
 };
 
 export type CheckSessionRequest = {
@@ -81,8 +74,8 @@ export async function getUser(): Promise<User>{
 };
 
 
-export async function patchUser(username:string): Promise<User>{
-    const response = await nextServer.patch<User>('/users/me', {username})
-
-    return response.data;
+export async function patchUser(payload: { username: string }): Promise<User> {
+    const { data } = await nextServer.patch<User>('/users/me', payload);
+    
+    return data;
 };
