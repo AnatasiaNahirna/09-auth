@@ -1,7 +1,6 @@
 import { User } from "@/types/user";
 import type { NoteTag, Note } from "../../types/note"
 import { nextServer } from "./api"
-export type { User } from "../../types/user"
 
 export interface FetchNotesResponse {
     notes: Note[],
@@ -13,12 +12,6 @@ export interface createNoteProps {
     content: string,
     tag: NoteTag,
 }
-
-export type RegisterRequest = {
-  email: string;
-  password: string;
-  userName: string;
-};
 
 export type CheckSessionRequest = {
   success: boolean;
@@ -41,7 +34,7 @@ export async function deleteNote(noteId: string): Promise<Note> {
     return deletedNote.data
 };
 
-export async function fetchNoteById(noteId: string) {
+export async function fetchNoteById(noteId: string): Promise<Note> {
     const noteById = await nextServer.get<Note>(`/notes/${noteId}`);
     return noteById.data;
 };

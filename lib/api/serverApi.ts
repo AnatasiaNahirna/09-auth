@@ -36,7 +36,7 @@ export async function getUser(): Promise<User>{
     return getUserRep.data;
 }
 
-export async function fetchNotes(keyWord?: string, page?: number, tag?: string): Promise<FetchNotesResponse>{
+export async function fetchNotes(page?: number, keyWord?: string, tag?: string): Promise<FetchNotesResponse>{
 const cookieStore = await cookies()
  tag = tag === "All" ? undefined : tag;
 

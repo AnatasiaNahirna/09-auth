@@ -34,15 +34,11 @@ export default function NotesClient({tag}: NotesClientProps) {
         setPage(event.selected + 1);
     };
 
-    useEffect(() => {
-        setTimeout(() => setPage(1), 0);
-    }, [debouncedQuery]);
-
 
     return (
         <div className={css.app}>
             <header className={css.toolbar}>
-                <SearchBox value={searchQuery} onChange={setSearchQuery} />
+                <SearchBox value={searchQuery} onChange={(value) => {setSearchQuery(value); setPage(1);}} />
                 {notesData && notesData.totalPages > 1 && (
                     <Pagination
                         pageCount={notesData.totalPages}
