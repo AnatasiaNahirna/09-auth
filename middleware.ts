@@ -24,6 +24,7 @@ export async function middleware(request: NextRequest) {
 
       if (setCookie) {
         const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
+        const response = NextResponse.next()
         for (const cookieStr of cookieArray) {
           const parsed = parse(cookieStr);
           const options = {
@@ -31,8 +32,8 @@ export async function middleware(request: NextRequest) {
             path: parsed.Path,
             maxAge: Number(parsed['Max-Age']),
           };
-          if (parsed.accessToken) cookieStore.set('accessToken', parsed.accessToken, options);
-          if (parsed.refreshToken) cookieStore.set('refreshToken', parsed.refreshToken, options);
+          if (parsed.accessToken) response.cookies.set('accessToken', parsed.accessToken, options);
+          if (parsed.refreshToken) response.cookies.set('refreshToken', parsed.refreshToken, options);
         }
 
         if (isPublicRoute) {
@@ -53,17 +54,17 @@ export async function middleware(request: NextRequest) {
         }
       }
 
-      if (isPublicRoute) {
-        return NextResponse.next();
-      }
-
-      if (isPrivateRoute) {
-        return NextResponse.redirect(new URL('/sign-in', request.url));
-      }
+    if (isPublicRoute) {
+      return NextResponse.next();
     }
 
-    return NextResponse.next();
+    if (isPrivateRoute) {
+      return NextResponse.redirect(new URL('/sign-in', request.url));
+    }
   }
+
+    return NextResponse.next();
+}
 
 export const config = {
   matcher: ['/profile/:path*', '/notes/:path*', '/sign-in', '/sign-up'],
